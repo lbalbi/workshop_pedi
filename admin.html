@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workshop PediPaper GO — Quizmaster</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script defer src="admin.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Quizmaster dashboard</h1>
+      <p class="subtitle">Workshop PediPaper GO</p>
+    </div>
+    <a class="admin-link" href="index.html">Back to team page</a>
+  </header>
+
+  <main class="container">
+    <section class="card" id="gateCard">
+      <h2>Protected view</h2>
+      <p>Enter the quizmaster password to reveal all teams, answers, and scores.</p>
+      <form id="passwordForm">
+        <label>
+          Password
+          <input id="passwordInput" type="password" required />
+        </label>
+        <button type="submit">Open dashboard</button>
+      </form>
+      <p class="hint warning">Important: on GitHub Pages this password is only a front-end gate, not strong security. The README explains the secure upgrade path.</p>
+    </section>
+
+    <section class="card hidden" id="dashboardCard">
+      <div class="row between center">
+        <div>
+          <h2>Live teams</h2>
+          <p id="dashboardMeta"></p>
+        </div>
+        <div class="row">
+          <button id="refreshBtn" type="button">Refresh</button>
+          <button id="exportBtn" type="button">Export CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="teamsTable">
+          <thead>
+            <tr>
+              <th>Team</th>
+              <th>Stage</th>
+              <th>Finished</th>
+              <th>Score</th>
+              <th>Last update</th>
+              <th>Answers</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
