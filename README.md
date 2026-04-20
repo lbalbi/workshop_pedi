@@ -1,28 +1,23 @@
 # Workshop PediPaper GO
 
-A GitHub Pages friendly web app for a location-based team quiz. Teams use one phone, choose a team name, answer 15 questions in 5 batches of 3, and unlock the next batch only when they reach the next checkpoint area.
+A GitHub Pages friendly web app for a location-based team quiz. Teams use one phone, choose a team name, answer 18 questions in 6 batches of 3, and unlock the next batch only when they reach the next checkpoint area.
 
 ## What this project does
 
 - Hosts the website on GitHub Pages.
 - Stores team names, answers, stage progress, and scores online in Supabase.
 - Shows the next checkpoint only after each batch is submitted.
-- Uses browser geolocation to unlock each next batch when the team is within a configurable radius, default 50 m.
+- Uses browser geolocation to unlock each next batch when the team is within a configurable radius, default 80 m.
 - Includes a quizmaster dashboard with a password gate and CSV export.
 
 ## Important security note
 
-Because GitHub Pages is a static hosting service, it cannot keep real secrets on the server side. GitHub says Pages publishes static files from a repository, and GitHub Pages itself is a static site hosting service. citeturn970585search0turn970585search3
+Because GitHub Pages is a static hosting service, it cannot keep real secrets on the server side. GitHub says Pages publishes static files from a repository, and GitHub Pages itself is a static site hosting service.
+That means the password in `admin.html` is only a front-end lock for convenience. It is **not secure** against a technical user who opens the browser developer tools.
 
-That means the password `HAKUNAMATATA` in `admin.html` is only a front-end lock for convenience. It is **not secure** against a technical user who opens the browser developer tools.
+If you want real protection for the quizmaster data, move the admin view to a backend or add Supabase Auth / Edge Functions so only authenticated quizmasters can read the full table. Supabase's JavaScript client supports database access and auth flows from browser apps.
 
-If you want real protection for the quizmaster data, move the admin view to a backend or add Supabase Auth / Edge Functions so only authenticated quizmasters can read the full table. Supabase's JavaScript client supports database access and auth flows from browser apps. citeturn970585search1turn970585search19
-
-## Why GitHub Pages + Supabase
-
-GitHub Pages works well here for the public interface, but shared online data needs a backend. Supabase provides a hosted Postgres database and JavaScript client that works directly from the browser. citeturn970585search1turn970585search16
-
-Also, browser geolocation requires a secure context. MDN documents the Geolocation API as available only in secure contexts, such as HTTPS, which GitHub Pages provides. citeturn970585search2turn970585search8
+GitHub Pages works well here for the public interface, but shared online data needs a backend. Supabase provides a hosted Postgres database and JavaScript client that works directly from the browser. Also, browser geolocation requires a secure context. MDN documents the Geolocation API as available only in secure contexts, such as HTTPS, which GitHub Pages provides.
 
 ## Files
 
@@ -37,37 +32,30 @@ Also, browser geolocation requires a secure context. MDN documents the Geolocati
 ## Setup steps
 
 ### 1. Create a Supabase project
-
 Create a new Supabase project and copy:
-
 - Project URL
 - Public anon key
 
-Supabase documents the browser JavaScript client and installation here. citeturn970585search1turn970585search10
+Supabase documents the browser JavaScript client and installation here.
 
 ### 2. Create the database table
-
 Run the SQL from `schema.sql` in the Supabase SQL Editor.
 
 ### 3. Configure the quiz
-
 Edit `config.js` and fill in:
-
 - `supabaseUrl`
 - `supabaseAnonKey`
 - `quizmasterPassword`
-- all 5 checkpoints with real `lat`, `lng`, `description`
-- all 15 questions and `correctAnswer`
+- all 6 checkpoints with real `lat`, `lng`, `description`
+- all 18 questions and `correctAnswer`
 
-The template is already split into 5 checkpoints × 3 questions.
+The template is already split into 6 checkpoints × 3 questions.
 
 ### 4. Push to GitHub
-
 Create a repo, add these files, and push.
 
 ### 5. Enable GitHub Pages
-
-In the repo settings, enable GitHub Pages and publish from the branch/folder you prefer. GitHub documents the publishing source configuration in their Pages docs. citeturn970585search15
+In the repo settings, enable GitHub Pages and publish from the branch/folder you prefer. GitHub documents the publishing source configuration in their Pages docs.
 
 ## How the flow works
 
@@ -77,20 +65,13 @@ In the repo settings, enable GitHub Pages and publish from the branch/folder you
 4. After submitting, the next checkpoint clue and map link appear.
 5. The team taps **Check my location**.
 6. If they are within `unlockRadiusMeters` of the checkpoint, the next 3 questions unlock.
-7. Repeat until checkpoint 5.
+7. Repeat until checkpoint 6.
 8. After the final submit, the total score is shown and also stored online.
 
-## Current MVP limitations
-
-- Team identity is based on team name and the browser's saved last team name.
-- The quizmaster password is not truly secure on static hosting.
-- The starter SQL allows public reads/writes so the MVP works quickly.
-- There is no anti-cheat protection if someone inspects the frontend or network calls.
 
 ## Recommended secure upgrade
 
 For a production event, I recommend this architecture:
-
 - Public team page on GitHub Pages.
 - Supabase Edge Functions for submissions and admin data access.
 - A hidden admin page protected with Supabase Auth or magic-link login.
@@ -98,7 +79,6 @@ For a production event, I recommend this architecture:
 - Optionally generate a unique private token per team at registration.
 
 ## Customization ideas
-
 - Add multiple-choice questions.
 - Show a live leaderboard after the event ends.
 - Add checkpoint images.
