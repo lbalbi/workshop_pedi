@@ -51,7 +51,7 @@ Run the SQL from `schema.sql` in the Supabase SQL Editor.
 
 ### 3. Configure the quiz
 
-Copy `config.example.js` to `config.js` and fill in:
+Edit `config.js` and fill in:
 
 - `supabaseUrl`
 - `supabaseAnonKey`
