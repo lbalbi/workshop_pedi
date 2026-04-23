@@ -10,6 +10,7 @@ const tbody = document.querySelector('#teamsTable tbody');
 const dashboardMeta = document.getElementById('dashboardMeta');
 const refreshBtn = document.getElementById('refreshBtn');
 const exportBtn = document.getElementById('exportBtn');
+const resetBtn = document.getElementById('resetBtn');
 
 let authorized = false;
 let lastTeams = [];
@@ -74,6 +75,34 @@ function exportCsv() {
   URL.revokeObjectURL(url);
 }
 
+async function resetGame() {
+  if (!authorized) return;
+
+  const confirmed = window.confirm(
+    'Reset the whole game? This will permanently delete all team names, answers, stages, and scores from the online database.'
+  );
+  if (!confirmed) return;
+
+  resetBtn.disabled = true;
+  const originalLabel = resetBtn.textContent;
+  resetBtn.textContent = 'Resetting…';
+
+  const { error } = await db.from('teams').delete().neq('team_name', '');
+
+  resetBtn.disabled = false;
+  resetBtn.textContent = originalLabel;
+
+  if (error) {
+    alert(`Failed to reset game: ${error.message}`);
+    return;
+  }
+
+  lastTeams = [];
+  tbody.innerHTML = '';
+  dashboardMeta.textContent = '0 team(s) loaded.';
+  alert('Game reset complete. All teams and answers were deleted.');
+}
+
 passwordForm.addEventListener('submit', async e => {
   e.preventDefault();
   if (passwordInput.value !== config.quizmasterPassword) {
@@ -88,3 +117,4 @@ passwordForm.addEventListener('submit', async e => {
 
 refreshBtn.addEventListener('click', () => authorized && loadTeams());
 exportBtn.addEventListener('click', exportCsv);
+resetBtn.addEventListener('click', resetGame);
