@@ -19,6 +19,7 @@ const progressLabel = document.getElementById('progressLabel');
 const progressBar = document.getElementById('progressBar');
 const stageSteps = Array.from(document.querySelectorAll('#stageSteps .stage-step'));
 const checkpointDescription = document.getElementById('checkpointDescription');
+const checkpointMediaWrap = document.getElementById('checkpointMediaWrap');
 const locationStatus = document.getElementById('locationStatus');
 const mapLinkWrap = document.getElementById('mapLinkWrap');
 const checkLocationBtn = document.getElementById('checkLocationBtn');
@@ -76,7 +77,7 @@ function renderStatus() {
   const progressStage = finished ? totalStages : currentStage;
   const progressPercent = totalStages ? (progressStage / totalStages) * 100 : 0;
   progressBar.style.width = `${progressPercent}%`;
-  progressLabel.textContent = finished ? 'All 5 stages completed' : `Stage ${currentStage} of ${totalStages}`;
+  progressLabel.textContent = finished ? `All ${totalStages} stages completed` : `Stage ${currentStage} of ${totalStages}`;
 
   stageSteps.forEach((step, index) => {
     step.classList.remove('active', 'done');
@@ -101,14 +102,30 @@ function renderCheckpointGate() {
   const checkpoint = getCheckpoint(currentStage);
   if (!checkpoint || finished) {
     locationCard.classList.add('hidden');
+    checkpointMediaWrap.innerHTML = '';
     return;
   }
 
   const isFirstStage = currentStage === 1;
   locationCard.classList.toggle('hidden', isFirstStage);
-  if (isFirstStage) return;
+  if (isFirstStage) {
+    checkpointMediaWrap.innerHTML = '';
+    return;
+  }
 
   checkpointDescription.textContent = `${checkpoint.description}`;
+
+  if (checkpoint.imageUrl) {
+    checkpointMediaWrap.innerHTML = `
+      <figure class="checkpoint-media-card">
+        <img class="checkpoint-image" src="${checkpoint.imageUrl}" alt="${checkpoint.description}" loading="lazy" />
+        <figcaption>Visual clue for ${checkpoint.description}</figcaption>
+      </figure>
+    `;
+  } else {
+    checkpointMediaWrap.innerHTML = '';
+  }
+
   mapLinkWrap.innerHTML = `<a class="map-link" target="_blank" rel="noopener noreferrer" href="${getGoogleMapsUrl(checkpoint.lat, checkpoint.lng)}">Open checkpoint in Google Maps</a>`;
   locationStatus.textContent = 'Check your location to unlock the next 3 questions.';
 }
