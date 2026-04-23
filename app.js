@@ -68,6 +68,17 @@ function haversineDistanceMeters(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+function resetLocalTeamState() {
+  currentTeam = null;
+  currentStage = 1;
+  answers = {};
+  score = 0;
+  finished = false;
+  localStorage.removeItem(TEAM_STORAGE_KEY);
+  teamCard.classList.remove('hidden');
+  finalCard.classList.add('hidden');
+}
+
 function renderStatus() {
   const totalStages = config.checkpoints.length;
   teamPill.textContent = currentTeam ? `Team: ${currentTeam}` : 'No team yet';
@@ -100,7 +111,7 @@ function renderStatus() {
 
 function renderCheckpointGate() {
   const checkpoint = getCheckpoint(currentStage);
-  if (!checkpoint || finished) {
+  if (!checkpoint || finished || !currentTeam) {
     locationCard.classList.add('hidden');
     checkpointMediaWrap.innerHTML = '';
     return;
@@ -132,7 +143,7 @@ function renderCheckpointGate() {
 
 function renderQuestions() {
   const checkpoint = getCheckpoint(currentStage);
-  if (!checkpoint || finished) {
+  if (!checkpoint || finished || !currentTeam) {
     quizCard.classList.add('hidden');
     return;
   }
@@ -177,12 +188,12 @@ async function upsertTeamRecord() {
   }
 }
 
-async function loadExistingTeam(teamName) {
+async function loadExistingTeam(teamName, { createIfMissing = true } = {}) {
   const { data, error } = await db.from('teams').select('*').eq('team_name', teamName).maybeSingle();
   if (error) {
     console.error(error);
     alert(`Failed to load team: ${error.message}`);
-    return;
+    return false;
   }
   if (data) {
     currentTeam = data.team_name;
@@ -190,18 +201,23 @@ async function loadExistingTeam(teamName) {
     answers = data.answers || {};
     score = data.score || 0;
     finished = !!data.finished;
-  } else {
+  } else if (createIfMissing) {
     currentTeam = teamName;
     currentStage = 1;
     answers = {};
     score = 0;
     finished = false;
     await upsertTeamRecord();
+  } else {
+    resetLocalTeamState();
+    renderAll();
+    return false;
   }
   localStorage.setItem(TEAM_STORAGE_KEY, currentTeam);
   teamCard.classList.add('hidden');
   renderAll();
   if (finished) showFinal();
+  return true;
 }
 
 function renderAll() {
@@ -242,7 +258,7 @@ teamForm.addEventListener('submit', async e => {
   e.preventDefault();
   const teamName = teamNameInput.value.trim();
   if (!teamName) return;
-  await loadExistingTeam(teamName);
+  await loadExistingTeam(teamName, { createIfMissing: true });
 });
 
 quizForm.addEventListener('submit', async e => {
@@ -278,7 +294,10 @@ checkLocationBtn.addEventListener('click', unlockQuestionsByLocation);
 (async function init() {
   const savedTeam = localStorage.getItem(TEAM_STORAGE_KEY);
   if (savedTeam) {
-    await loadExistingTeam(savedTeam);
+    const restored = await loadExistingTeam(savedTeam, { createIfMissing: false });
+    if (!restored) {
+      alert('The saved team from this device was not found online. The game may have been reset. Please enter the team name again to start fresh.');
+    }
   }
   renderAll();
 })();
